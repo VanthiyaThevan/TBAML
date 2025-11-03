@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage 5 Validation Checklist</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .checklist {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0369a1;
+            border-bottom: 2px solid #0369a1;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #0284c7;
+            margin-top: 30px;
+        }
+        .test-item {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f9fafb;
+            border-left: 4px solid #0ea5e9;
+            border-radius: 4px;
+        }
+        .test-item label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .test-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .test-item strong {
+            color: #1f2937;
+        }
+        .test-item code {
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        .section {
+            margin: 20px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 20px 0;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #10b981;
+            color: white;
+        }
+        .status.pending {
+            background: #f59e0b;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="checklist">
+        <h1>Stage 5 Frontend Validation Checklist</h1>
+        
+        <div class="status pending" id="status">Validation In Progress</div>
+
+        <h2>1. Setup & Configuration</h2>
+        <div class="section">
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="setup">
+                    <span><strong>Frontend starts without errors</strong> - <code>npm run dev</code> runs successfully</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="setup">
+                    <span><strong>Chrome can access</strong> - <code>http://localhost:3000</code> loads</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="setup">
+                    <span><strong>No console errors</strong> - Chrome DevTools Console is clean</span>
+                </label>
+            </div>
+        </div>
+
+        <h2>2. UC1 Input Form</h2>
+        <div class="section">
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="form">
+                    <span><strong>Form renders</strong> - All form fields visible</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="form">
+                    <span><strong>Client field</strong> - Text input accepts client name</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="form">
+                    <span><strong>Country field</strong> - Only accepts 2-letter codes</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="form">
+                    <span><strong>Role dropdown</strong> - Shows Import/Export options</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="form">
+                    <span><strong>Product field</strong> - Text input accepts product name</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="form">
+                    <span><strong>Form validation</strong> - Shows errors for empty fields</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="form">
+                    <span><strong>Invalid country code</strong> - Shows error for 3+ characters</span>
+                </label>
+            </div>
+        </div>
+
+        <h2>3. Loading & Error States</h2>
+        <div class="section">
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="loading">
+                    <span><strong>Loading spinner</strong> - Appears during API call</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="loading">
+                    <span><strong>Form disabled</strong> - Form fields disabled during submission</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="loading">
+                    <span><strong>Button state</strong> - Button shows "Verifying..." during submission</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="loading">
+                    <span><strong>Error display</strong> - Shows error message on API failure</span>
+                </label>
+            </div>
+        </div>
+
+        <h2>4. Results Display</h2>
+        <div class="section">
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="results">
+                    <span><strong>Results section</strong> - Shows verification ID, client, country, role</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="results">
+                    <span><strong>Activity indicator</strong> - Displays activity level with color coding</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="results">
+                    <span><strong>Flags display</strong> - Shows flags with color coding (HIGH/MEDIUM/LOW)</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="results">
+                    <span><strong>Red flag badge</strong> - Shows "RED FLAG" badge when applicable</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="results">
+                    <span><strong>Source citation</strong> - Lists data sources</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="results">
+                    <span><strong>Website link</strong> - Shows clickable website source link</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="results">
+                    <span><strong>AI response</strong> - Displays AI analysis text</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="results">
+                    <span><strong>Show More/Less</strong> - AI response expand/collapse works</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="results">
+                    <span><strong>Timeline</strong> - Shows data collected, publication date, timestamps</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="results">
+                    <span><strong>Confidence score</strong> - Displays confidence and freshness scores</span>
+                </label>
+            </div>
+        </div>
+
+        <h2>5. Responsive Design</h2>
+        <div class="section">
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="responsive">
+                    <span><strong>Mobile (375px)</strong> - Layout adapts correctly</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="responsive">
+                    <span><strong>Tablet (768px)</strong> - Layout adapts correctly</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="responsive">
+                    <span><strong>Desktop (1920px)</strong> - Layout adapts correctly</span>
+                </label>
+            </div>
+        </div>
+
+        <h2>6. Network & API</h2>
+        <div class="section">
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="network">
+                    <span><strong>API request</strong> - Network tab shows POST to <code>/api/v1/lob/verify</code></span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="network">
+                    <span><strong>Request payload</strong> - Contains client, country, role, product</span>
+                </label>
+            </div>
+            <div class="test-item">
+                <label>
+                    <input type="checkbox" data-category="network">
+                    <span><strong>Response status</strong> - Status 200 with UC1 outputs</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update status based on checkboxes
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        const statusDiv = document.getElementById('status');
+        
+        function updateStatus() {
+            const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const total = checkboxes.length;
+            const percentage = (checked / total) * 100;
+            
+            if (percentage === 100) {
+                statusDiv.textContent = `✅ All Tests Passed (${checked}/${total})`;
+                statusDiv.className = 'status success';
+            } else if (percentage >= 50) {
+                statusDiv.textContent = `⚠️  In Progress (${checked}/${total})`;
+                statusDiv.className = 'status pending';
+            } else {
+                statusDiv.textContent = `⏳ Started (${checked}/${total})`;
+                statusDiv.className = 'status pending';
+            }
+        }
+        
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateStatus);
+        });
+        
+        // Load saved state from localStorage
+        checkboxes.forEach(cb => {
+            const saved = localStorage.getItem(cb.closest('.test-item').textContent);
+            if (saved === 'true') {
+                cb.checked = true;
+            }
+        });
+        
+        // Save state to localStorage
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                localStorage.setItem(this.closest('.test-item').textContent, this.checked);
+            });
+        });
+        
+        updateStatus();
+    </script>
+</body>
+</html>
+
