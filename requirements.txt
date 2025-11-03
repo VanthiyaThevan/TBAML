@@ -1,0 +1,51 @@
+# TBAML System - UC1: Line of Business Verification
+# Python Dependencies
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Database
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+alembic==1.12.1
+
+# AI/ML & NLP
+openai==1.3.5
+anthropic==0.7.8
+# spaCy - install separately: pip install spacy (or use latest version)
+# spacy>=3.7.0
+transformers==4.35.2
+sentence-transformers==2.2.2
+
+# Web Scraping
+beautifulsoup4==4.12.2
+requests==2.31.0
+selenium==4.15.2
+scrapy==2.11.0
+
+# Data Processing
+pandas==2.1.3
+numpy==1.26.2
+
+# Utilities
+python-dotenv==1.0.0
+python-multipart==0.0.6
+structlog==23.2.0
+httpx==0.25.2
+
+# Security & Privacy
+cryptography==41.0.7
+
+# Optional: Vector DB
+# chromadb==0.4.17
+
+# Development
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+
