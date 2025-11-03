@@ -1,0 +1,323 @@
+================================================================================
+TBAML SYSTEM - POC WORKFLOW SUMMARY
+================================================================================
+
+SYSTEM: Trade-Based Anti-Money Laundering (TBAML)
+USE CASE: UC1 - Line of Business Verification
+TYPE: Functional Proof of Concept
+
+================================================================================
+COMPLETE END-TO-END WORKFLOW
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ PHASE 1: USER INPUT                                                       │
+└──────────────────────────────────────────────────────────────────────────┘
+
+1. User provides information:
+   - Company Name (e.g., "Shell plc")
+   - Country Code (e.g., "GB")
+   - Role: Import or Export
+   - Product Name (optional, e.g., "Oil & Gas")
+
+2. Entry point options:
+   - Option A: Frontend web form (React) → submits to API
+   - Option B: Direct API call to POST /api/v1/lob/verify
+
+3. API validates input:
+   - Checks required fields
+   - Validates country code format
+   - Validates role (Import/Export)
+   - Logs request
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ PHASE 2: DATA COLLECTION                                                  │
+└──────────────────────────────────────────────────────────────────────────┘
+
+The system collects data from THREE parallel sources:
+
+SOURCE 1: WebScraper (Company Website)
+├─ Step 2.1: Automatic Website Discovery
+│  ├─ Strategy 1: Try domain patterns (www.companyname.com)
+│  │  └─ Validates URLs, checks if company name in content
+│  ├─ Strategy 2: Try name variations (remove Inc/Ltd/etc.)
+│  │  └─ Handles "BP (British Petroleum)" → tries "bp.com"
+│  └─ Strategy 3: Tavily API fallback (if needed)
+│     └─ Web search: "Company official website Country"
+├─ Step 2.2: Scrape Website
+│  ├─ HTTP GET request with User-Agent header
+│  ├─ Parse HTML with BeautifulSoup
+│  ├─ Extract text content (remove scripts/styles)
+│  ├─ Extract metadata (title, description, links)
+│  └─ Extract publication dates (if available)
+└─ Output: Website URL, content, publication date, metadata
+
+SOURCE 2: CompanyRegistryFetcher (Official Registries)
+├─ US Companies: SEC EDGAR
+│  ├─ Load pre-downloaded company_tickers.json (10,142 companies)
+│  ├─ Search by company name or ticker
+│  └─ Return: Ticker, CIK, SEC URL (if publicly traded)
+├─ UK Companies: Companies House (placeholder - not implemented)
+└─ AU Companies: ASIC (placeholder - not implemented)
+└─ Output: Registry match status, company details
+
+SOURCE 3: SanctionsChecker (Sanctions Lists)
+├─ OFAC SDN List (US Sanctions)
+│  ├─ Load pre-downloaded sdn_advanced.xml (17,711 entities)
+│  ├─ Parse XML efficiently
+│  ├─ Search entity names (partial matching)
+│  └─ Return: Match status, match details, programs
+├─ EU Consolidated Sanctions List
+│  ├─ Load pre-downloaded eu_sanctions.xml (5,579 entities)
+│  ├─ Parse XML efficiently
+│  ├─ Search entity names (partial matching)
+│  └─ Return: Match status, regulations, logical IDs
+└─ UN Sanctions (placeholder - not implemented)
+└─ Output: Sanctions match status, match details, risk indication
+
+Step 2.3: Aggregate Results
+├─ DataConnector merges results from all sources
+├─ Tracks source attribution (which sources provided data)
+├─ Handles failures gracefully (continues if one source fails)
+└─ Output: Aggregated data, sources list, success status
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ PHASE 3: DATA VALIDATION & STORAGE                                       │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Step 3.1: Validate Collected Data
+├─ Check data quality (required fields, format, content)
+├─ Validate sanctions data format
+├─ Validate company registry data format
+└─ Ensure at least one source succeeded
+
+Step 3.2: Store Initial Record in Database
+├─ Create LOBVerification record in SQLite database
+├─ Store input data: client, country, role, product
+├─ Store collected data: sources, raw data
+├─ Store website URL (if found)
+├─ Store publication date (if extracted)
+├─ Store timestamps: created_at, data_collected_at
+└─ Returns: Verification ID (for later updates)
+
+Note: AI fields (ai_response, activity_level, flags, etc.) are NULL at this stage
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ PHASE 4: AI/ML ANALYSIS                                                  │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Step 4.1: Prepare AI Input
+├─ Retrieve stored verification record
+├─ Extract evidence text from collected data
+├─ Combine: website content, registry info, sanctions info
+└─ Prepare context for LLM
+
+Step 4.2: Text Processing
+├─ Clean text (remove noise, normalize)
+├─ Extract features (text quality, length, keywords)
+├─ Prepare text for LLM (limit to 4000 characters)
+└─ Extract entities (company names, locations)
+
+Step 4.3: LLM Analysis (Ollama - Local)
+├─ Call Ollama API (llama3.2 model on localhost:11434)
+├─ Prompt includes: company info, evidence, sanctions info
+├─ LLM generates legitimacy assessment
+└─ Output: Analysis text about company legitimacy
+
+Step 4.4: Activity Level Classification
+├─ ActivityClassifier uses LLM to classify
+├─ Analyzes evidence for activity indicators
+├─ Determines: Active, Dormant, Inactive, Suspended, or Unknown
+└─ Output: Activity level + confidence
+
+Step 4.5: Risk Assessment
+├─ RiskClassifier calculates risk score
+├─ Factors:
+│  ├─ Sanctions match: +0.5 (if found)
+│  ├─ High-risk keywords: +0.1 each
+│  ├─ Medium-risk keywords: +0.05 each
+│  └─ Flags count: +0.1 each
+├─ Determines risk level: High (>=0.7), Medium (>=0.4), Low (<0.4)
+└─ Output: Risk score, risk level
+
+Step 4.6: Flag Generation
+├─ FlagGenerator creates compliance flags
+├─ Categories:
+│  ├─ sanctions_match: Entity in sanctions lists → HIGH severity
+│  ├─ high_risk: Risk score >= 0.7 → HIGH severity
+│  ├─ compliance_issue: Unregistered, suspicious patterns
+│  ├─ data_quality: Limited evidence, unreliable sources
+│  └─ source_reliability: Few sources, inconsistent data
+└─ Output: List of flags with severity levels
+
+Step 4.7: Confidence Score Calculation
+├─ Calculates confidence in analysis
+├─ Logic:
+│  ├─ Sanctions match = HIGH confidence (concrete evidence)
+│  ├─ Red flags = HIGH confidence (clear risk indicators)
+│  ├─ Multiple sources = Higher confidence
+│  └─ Limited evidence = LOW confidence
+└─ Output: High, Medium, or Low confidence
+
+Step 4.8: Red Flag Determination
+├─ Determines if immediate attention needed
+├─ Criteria:
+│  ├─ High risk score (>= 0.7) → Red flag
+│  ├─ 2+ high severity flags → Red flag
+│  └─ Sanctions match → Red flag
+└─ Output: True or False
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ PHASE 5: DATABASE UPDATE                                                  │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Step 5.1: Update Verification Record
+├─ Update existing record with AI analysis results
+├─ Populate fields:
+│  ├─ ai_response: LLM-generated analysis text
+│  ├─ activity_level: Active/Dormant/Inactive/etc.
+│  ├─ flags: List of compliance flags (JSON array)
+│  ├─ confidence_score: High/Medium/Low
+│  ├─ is_red_flag: True/False
+│  └─ last_verified_at: Timestamp
+└─ Commit transaction
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ PHASE 6: RESPONSE FORMATTING & DELIVERY                                   │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Step 6.1: Format Output
+├─ Retrieve updated verification record
+├─ Format according to LOBVerificationOutput schema
+└─ Include all UC1 required outputs
+
+Step 6.2: Return JSON Response
+├─ Include verification ID
+├─ Include all UC1 outputs (see below)
+├─ Include metadata (timestamps, confidence)
+└─ Include source citations
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ PHASE 7: FRONTEND DISPLAY (if using web UI)                               │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Step 7.1: Frontend Receives Response
+├─ React Query handles response
+├─ Updates UI state
+└─ Shows loading state during processing
+
+Step 7.2: Display Results
+├─ Activity Indicator: Shows activity level with color coding
+├─ Flags Display: Shows all flags with severity (red/yellow/green)
+├─ AI Response: Shows LLM-generated analysis text
+├─ Source Citations: Lists all data sources used
+├─ Timeline: Shows data collection → AI analysis timeline
+└─ Red Flag Alert: Prominent display if red flag = true
+
+
+================================================================================
+UC1 REQUIRED OUTPUTS (All Provided)
+================================================================================
+
+1. AI Response: Text analysis of company legitimacy
+2. Website Source: URL of company website (if found)
+3. Publication Date: Date information was published (if extracted)
+4. Activity Level: Active/Dormant/Inactive/Suspended/Unknown
+5. Flags: List of alerts/warnings (compliance, risk, data quality)
+6. Sources: List of data sources used (with attribution)
+7. Confidence Score: High/Medium/Low (how confident in results)
+8. Red Flag: True/False (immediate attention needed)
+
+
+================================================================================
+TIMING & PERFORMANCE
+================================================================================
+
+Typical Processing Times:
+- Data Collection: 5-15 seconds
+  • Website discovery: 1-10 seconds
+  • Website scraping: 2-5 seconds
+  • Company registry: 1-2 seconds
+  • Sanctions check: 1-3 seconds
+
+- AI Analysis: 5-20 seconds
+  • Text processing: <1 second
+  • LLM calls: 3-15 seconds (depends on Ollama)
+  • Classification: 2-5 seconds
+
+Total: 10-35 seconds per verification
+
+
+================================================================================
+DATA SOURCES (Real & Integrated)
+================================================================================
+
+✅ WebScraper:
+   - Automatic website discovery (3 strategies)
+   - Website scraping with BeautifulSoup
+   - Publication date extraction
+
+✅ CompanyRegistryFetcher:
+   - SEC EDGAR (US): 10,142 publicly traded companies
+   - Companies House (UK): Placeholder (not implemented)
+   - ASIC (AU): Placeholder (not implemented)
+
+✅ SanctionsChecker:
+   - OFAC SDN List: 17,711 sanctioned entities
+   - EU Consolidated List: 5,579 sanctioned entities
+   - UN Sanctions: Placeholder (not implemented)
+
+
+================================================================================
+AI/ML COMPONENTS
+================================================================================
+
+✅ Ollama Integration:
+   - Model: llama3.2 (local, no API costs)
+   - Base URL: http://localhost:11434
+   - Temperature: 0.3 (focused responses)
+
+✅ Analysis Pipeline:
+   1. Text Processing & Feature Extraction
+   2. LLM Legitimacy Assessment
+   3. Activity Level Classification
+   4. Risk Score Calculation
+   5. Flag Generation
+   6. Confidence Score Calculation
+   7. Red Flag Determination
+
+
+================================================================================
+ERROR HANDLING
+================================================================================
+
+- Website Not Found: Continues, sets website_source = NULL
+- Registry Not Found: Continues, marks as "not found"
+- Sanctions Check Error: Continues, marks as "error"
+- LLM Error: Returns partial results (data collected, no AI)
+- All errors logged for debugging
+
+
+================================================================================
+SUMMARY
+================================================================================
+
+This POC demonstrates:
+✅ Automated data collection from multiple sources
+✅ Intelligent website discovery with fallback
+✅ Real sanctions checking (OFAC + EU)
+✅ AI-powered analysis using local LLM
+✅ Risk assessment with flag generation
+✅ Explainable results with source attribution
+✅ Complete UC1 implementation
+
+Status: Functional POC - Ready for Demonstration
+
+================================================================================
+
